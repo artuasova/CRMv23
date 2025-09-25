@@ -2648,7 +2648,6 @@
 		        returnsSnapshot.forEach(doc => {
 		            returnsData.push({id: doc.id, ...doc.data()});
 		        });
-		        returnsData.sort((a, b) => new Date(b.date) - new Date(a.date));
 		    } catch (error) {
 		        console.error('Ошибка загрузки возвратов:', error);
 		        throw error;
