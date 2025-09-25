@@ -2587,7 +2587,7 @@
 		        if (getRoleFromToken() !== 'admin') {
 		            salesQuery = salesQuery.where('user_id', '==', currentUser.uid);
 		        }
-		        salesQuery = salesQuery.orderBy('date', 'desc').limit(itemsPerPage);
+		        salesQuery = salesQuery.orderBy('createdAt', 'desc').limit(itemsPerPage);
 		        if (currentPage > 1 && lastVisibleSaleDate) {
 		            salesQuery = salesQuery.startAfter(lastVisibleSaleDate);
 		        }
@@ -2598,7 +2598,7 @@
 		        });
 		        if (!salesSnapshot.empty) {
 		            const lastDoc = salesSnapshot.docs[salesSnapshot.docs.length - 1];
-		            lastVisibleSaleDate = lastDoc.data().date;
+		            lastVisibleSaleDate = lastDoc;
 		        } else {
 		            lastVisibleSaleDate = null;
 		        }
