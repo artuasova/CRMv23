@@ -2641,7 +2641,7 @@
                 if (getRoleFromToken() !== 'admin') {
                     const userSaleIds = salesData.map(sale => sale.id);
                     if (userSaleIds.length > 0) {
-                        returnsQuery = returnsQuery.where('sale_id', 'in', userSaleIds);
+                        returnsQuery = returnsQuery.where('user_id', '==', currentUser.uid);
                     } else {
                         returnsQuery = returnsQuery.where('sale_id', '==', 'nonexistent-id');
                     }
@@ -3040,6 +3040,7 @@
                 validateRequired(date, "Дата возврата");
                 const returnItem = {
                     sale_id: saleId,
+					user_id: sale.user_id,
                     reason: reason,
                     amount: parseFloat(amount),
                     date: date,
