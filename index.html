@@ -1823,7 +1823,7 @@
         let itemsPerPage = 10;
         let expenseCurrentPage = 1;
         let returnCurrentPage = 1;
-        let lastVisibleSale = null;
+        let lastVisibleSaleDate = null;
         let lastVisibleExpense = null; 
         let lastVisibleReturn = null; 
         const editIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
@@ -2582,31 +2582,31 @@
         // ======================
         // Функция для загрузки продаж
         async function loadSalesData() {
-            try {
-                let salesQuery = db.collection('sales');
-                if (getRoleFromToken() !== 'admin') {
-                    salesQuery = salesQuery.where('user_id', '==', currentUser.uid);
-                }
-                if (currentPage > 1 && lastVisibleSale) {
-                    salesQuery = salesQuery.startAfter(lastVisibleSale);
-                }
-                salesQuery = salesQuery.orderBy('date', 'desc').limit(itemsPerPage);
-                const salesSnapshot = await salesQuery.get();
-                salesData = [];
-                salesSnapshot.forEach(doc => {
-                    salesData.push({id: doc.id, ...doc.data()});
-                });
-		salesData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                if (!salesSnapshot.empty) {
-                    lastVisibleSale = salesSnapshot.docs[salesSnapshot.docs.length - 1];
-                } else {
-                    lastVisibleSale = null;
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки продаж:', error);
-                throw error;
-            }
-        }
+		    try {
+		        let salesQuery = db.collection('sales');
+		        if (getRoleFromToken() !== 'admin') {
+		            salesQuery = salesQuery.where('user_id', '==', currentUser.uid);
+		        }
+		        salesQuery = salesQuery.orderBy('date', 'desc').limit(itemsPerPage);
+		        if (currentPage > 1 && lastVisibleSaleDate) {
+		            salesQuery = salesQuery.startAfter(lastVisibleSaleDate);
+		        }
+		        const salesSnapshot = await salesQuery.get();
+		        salesData = [];
+		        salesSnapshot.forEach(doc => {
+		            salesData.push({id: doc.id, ...doc.data()});
+		        });
+		        if (!salesSnapshot.empty) {
+		            const lastDoc = salesSnapshot.docs[salesSnapshot.docs.length - 1];
+		            lastVisibleSaleDate = lastDoc.data().date;
+		        } else {
+		            lastVisibleSaleDate = null;
+		        }
+		    } catch (error) {
+		        console.error('Ошибка загрузки продаж:', error);
+		        throw error;
+		    }
+		}
         // Функция для загрузки расходов
         async function loadExpensesData() {
             try {
@@ -3879,7 +3879,8 @@
                 }
             }
             // НОВОЕ: Сортируем по дате (новые сверху)
-            filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+			filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+			
             const paginatedSales = paginateArray(filteredSales, currentPage, itemsPerPage);
             paginatedSales.forEach(sale => {
                 const userName = userNamesCache[sale.user_id] || 'Неизвестный';
