@@ -2636,28 +2636,24 @@
         }
         // Функция для загрузки возвратов
         async function loadReturnsData() {
-            try {
-                let returnsQuery = db.collection('returns');
-                if (getRoleFromToken() !== 'admin') {
-                    const userSaleIds = salesData.map(sale => sale.id);
-                    if (userSaleIds.length > 0) {
-                        returnsQuery = returnsQuery.where('user_id', '==', currentUser.uid);
-                    } else {
-                        returnsQuery = returnsQuery.where('sale_id', '==', 'nonexistent-id');
-                    }
-                }
-                returnsQuery = returnsQuery.orderBy('date', 'desc');
-                const returnsSnapshot = await returnsQuery.get();
-                returnsData = [];
-                returnsSnapshot.forEach(doc => {
-                    returnsData.push({id: doc.id, ...doc.data()});
-                });
-		returnsData.sort((a, b) => new Date(b.date) - new Date(a.date));
-            } catch (error) {
-                console.error('Ошибка загрузки возвратов:', error);
-                throw error;
-            }
-        }
+		    try {
+		        let returnsQuery = db.collection('returns');
+		        if (getRoleFromToken() !== 'admin') {
+		            // Фильтруем напрямую по user_id — НОВОЕ ПРАВИЛО!
+		            returnsQuery = returnsQuery.where('user_id', '==', currentUser.uid);
+		        }
+		        returnsQuery = returnsQuery.orderBy('date', 'desc');
+		        const returnsSnapshot = await returnsQuery.get();
+		        returnsData = [];
+		        returnsSnapshot.forEach(doc => {
+		            returnsData.push({id: doc.id, ...doc.data()});
+		        });
+		        returnsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+		    } catch (error) {
+		        console.error('Ошибка загрузки возвратов:', error);
+		        throw error;
+		    }
+		}
         // Функция для загрузки пользователей (только для админа)
         async function loadAllUsers() {
             try {
@@ -3039,16 +3035,15 @@
                 validateNumber(amount, "Сумма возврата", 0.01);
                 validateRequired(date, "Дата возврата");
                 const returnItem = {
-                    sale_id: saleId,
-					user_id: sale.user_id,
-                    reason: reason,
-                    amount: parseFloat(amount),
-                    date: date,
-                    user_id: currentUser.uid,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    lastModifiedBy: currentUser.uid,
-                    lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+			    sale_id: saleId,
+			    reason: reason,
+			    amount: parseFloat(amount),
+			    date: date,
+			    user_id: currentUser.uid, // ←←← ОБЯЗАТЕЛЬНО!
+			    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+			    lastModifiedBy: currentUser.uid,
+			    lastModifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+			};
                 showLoading('Сохраняем возврат...');
                 const docRef = await db.collection('returns').add(returnItem);
                 const sale = salesData.find(s => s.id === saleId);
