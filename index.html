@@ -2804,13 +2804,35 @@
                     article: article,
                     purchase_price: parseFloat(purchasePrice),
                     selling_price: parseFloat(sellingPrice),
+					date: saleDateWithTime
                     commission: parseFloat(document.getElementById('commission').value) || 0,
                     logistics: parseFloat(document.getElementById('logistics').value) || 0,
                     delivery_to_mv: parseFloat(document.getElementById('delivery-mv').value) || 0,
                     advertising: parseFloat(document.getElementById('advertising').value) || 0.98,
                     tax_rate: parseFloat(document.getElementById('tax-rate').value) || 0.99,
                     quantity: parseInt(document.getElementById('quantity').value) || 1,
-                    date: document.getElementById('sale-date').value,
+                    // Получаем выбранную дату (например: "2025-04-05")
+					const selectedDateStr = document.getElementById('sale-date').value;
+					
+					// Если дата не выбрана — используем текущий день
+					if (!selectedDateStr) {
+					    throw new Error("Пожалуйста, укажите дату продажи");
+					}
+					
+					// Создаём объект Date из выбранной даты (время будет 00:00:00 по UTC)
+					const selectedDate = new Date(selectedDateStr);
+					
+					// Получаем текущее локальное время
+					const now = new Date();
+					
+					// Устанавливаем ЧАСЫ, МИНУТЫ, СЕКУНДЫ и МИЛЛИСЕКУНДЫ от текущего момента
+					selectedDate.setHours(now.getHours());
+					selectedDate.setMinutes(now.getMinutes());
+					selectedDate.setSeconds(now.getSeconds());
+					selectedDate.setMilliseconds(now.getMilliseconds());
+					
+					// Преобразуем в ISO-строку (для Firestore)
+					const saleDateWithTime = selectedDate.toISOString(); // Пример: "2025-04-05T14:32:18.123Z"
                     marketplace: document.getElementById('marketplace-select').value,
                     shop: document.getElementById('shop-select').value,
                     user_id: currentUser.uid,
